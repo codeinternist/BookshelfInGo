@@ -2,7 +2,7 @@ package workers
 
 import (
 	"api/models"
-	"fmt"
+	"api/services"
 	"errors"
 )
 
@@ -15,28 +15,29 @@ type IBookWorker interface {
 }
 
 func CreateBook(book models.Book) (int, error) {
-	fmt.Println(book.Title)
-	fmt.Println(book.Status)
-	return 42, nil
+	if book.Rating >= 4 || book.Rating <= 0 {
+		return 42, errors.New("Invalid book rating")
+	}
+	// regex approve date input
+	return services.CreateBook(book)
 }
 
 func RetrieveBookById(id int) (models.Book, error) {
-	fmt.Println(id)
-	return models.Book{Title:"title"}, nil
+	return services.RetrieveBookById(id)
 }
 
 func RetrieveAllBooks() ([]models.Book, error) {
-	return nil, errors.New("Not implemented")
+	return services.RetrieveAllBooks()
 }
 
 func UpdateBookById(book models.Book, id int) error {
-	fmt.Println(book.Title)
-	fmt.Println(book.Status)
-	fmt.Println(id)
-	return nil
+	if book.Rating >= 4 || book.Rating <= 0 {
+		return errors.New("Invalid book rating")
+	}
+	// regex approve date input
+	return services.UpdateBookById(book, id)
 }
 
 func DeleteBookById(id int) error {
-	fmt.Println(id)
-	return nil
+	return services.DeleteBookById(id)
 }

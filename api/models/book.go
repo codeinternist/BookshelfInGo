@@ -4,11 +4,11 @@ import (
 	"time"
 )
 
-type Status bool
+type Status int
 
 const (
-	CheckedIn		Status = true
-	CheckedOut		Status = false
+	CheckedIn		Status = 1
+	CheckedOut		Status = 0
 )
 
 type Book struct {
