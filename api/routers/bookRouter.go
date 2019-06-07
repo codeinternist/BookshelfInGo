@@ -11,12 +11,12 @@ func GetRouter() *chi.Mux {
 	router := chi.NewRouter()
 	
 	router.Get("/", func(response http.ResponseWriter, request *http.Request) {
-		response.Write([]byte("ok"))
+		response.Write([]byte("alive"))
 	})
 	
 	router.Route("/books", func(router chi.Router) {
-		router.Post("/create", controllers.CreateBook)
-		router.Get("/all", controllers.RetrieveAllBooks)
+		router.Post("/", controllers.CreateBook)
+		router.Get("/", controllers.RetrieveAllBooks)
 		router.Route("/{id}", func(router chi.Router) {
 			router.Use(GetIDContextFromURL)
 			router.Get("/", controllers.RetrieveBookById)

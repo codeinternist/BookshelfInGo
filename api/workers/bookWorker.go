@@ -18,7 +18,9 @@ func CreateBook(book models.Book) (int, error) {
 	if book.Rating >= 4 || book.Rating <= 0 {
 		return 42, errors.New("Invalid book rating")
 	}
-	// regex approve date input
+	if book.Status < 0 || book.Status > 1 {
+		return 42, errors.New("Invalid status")
+	}
 	return services.CreateBook(book)
 }
 
@@ -34,7 +36,9 @@ func UpdateBookById(book models.Book, id int) error {
 	if book.Rating >= 4 || book.Rating <= 0 {
 		return errors.New("Invalid book rating")
 	}
-	// regex approve date input
+	if book.Status < 0 || book.Status > 1 {
+		return errors.New("Invalid status")
+	}
 	return services.UpdateBookById(book, id)
 }
 
