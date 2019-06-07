@@ -3,9 +3,7 @@ package services
 import (
 	"api/models"
 	"errors"
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 )
 
 type IBookService interface {
@@ -17,12 +15,12 @@ type IBookService interface {
 }
 
 func CreateBook(book models.Book) (int, error) {
-	tx, err := StartTransaction()
+	db, err := GetDatabase()
 	if err != nil {
 		return 42, err
 	}
-	res, err := tx.Exec(
-		`INSERT INTO library VALUES ($1, $2, $3, $4, $5, $6)`,
+	res, err := db.Exec(
+		`INSERT INTO library (title, author, publisher, publish_date, rating, status) VALUES (?, ?, ?, ?, ?, ?)`,
 		book.Title,
 		book.Author,
 		book.Publisher,
@@ -30,9 +28,10 @@ func CreateBook(book models.Book) (int, error) {
 		book.Rating,
 		book.Status,
 	)
-	if err = CompleteTransaction(tx, err); err != nil {
+	if err != nil {
 		return 42, err
 	}
+	
 	id, err := res.LastInsertId()
 	if err != nil {
 		return 42, errors.New("Error extracting book id")
@@ -49,19 +48,21 @@ func RetrieveBookById(id int) (models.Book, error) {
 	var book models.Book
 
 	row := db.QueryRow(
-		`SELECT title, author, publisher, publish_date, rating, status FROM library WHERE id = $1`,
+		`SELECT title, author, publisher, publish_date, rating, status FROM library WHERE id = ?`,
 		id,
 	)
 	if err = row.Scan(
-		book.Title,
-		book.Author,
-		book.Publisher,
-		book.PublishDate,
-		book.Rating,
-		book.Status,
+		&book.Title,
+		&book.Author,
+		&book.Publisher,
+		&book.PublishDate,
+		&book.Rating,
+		&book.Status,
 	); err != nil {
 		return models.Book{}, err
 	}
+
+	db.Close()
 	
 	return book, nil
 }
@@ -75,7 +76,7 @@ func RetrieveAllBooks() ([]models.Book, error) {
 	var books []models.Book
 
 	rows, err := db.Query(
-		`SELECT title, author, publisher, publish_date, rating, status FROM library`
+		`SELECT title, author, publisher, publish_date, rating, status FROM library`,
 	)
 	if err != nil {
 		return nil, err
@@ -84,12 +85,12 @@ func RetrieveAllBooks() ([]models.Book, error) {
 	for rows.Next() {
 		var book models.Book
 		if err = rows.Scan(
-			book.Title,
-			book.Author,
-			book.Publisher,
-			book.PublishDate,
-			book.Rating,
-			book.Status,
+			&book.Title,
+			&book.Author,
+			&book.Publisher,
+			&book.PublishDate,
+			&book.Rating,
+			&book.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -100,44 +101,60 @@ func RetrieveAllBooks() ([]models.Book, error) {
 		return nil, errors.New("Row iteration error")
 	}
 
+	db.Close()
+
 	return books, nil
 }
 
 func UpdateBookById(book models.Book, id int) error {
-	tx, err := StartTransaction()
+	db, err := GetDatabase()
 	if err != nil {
 		return err
 	}
 
-	res, err := tx.Exec(
-		`UPDATE library SET title = $2, author = $3, publisher = $4, publish_date = $5, rating = $6, status = $7 WHERE id = $1`,
-		id,
+	res, err := db.Exec(
+		`UPDATE library SET title = ?, author = ?, publisher = ?, publish_date = ?, rating = ?, status = ? WHERE id = ?`,
 		book.Title,
 		book.Author,
 		book.Publisher,
 		book.PublishDate,
 		book.Rating,
 		book.Status,
+		id,
 	)
-	if err = CompleteTransaction(tx, err); err != nil {
+	if err != nil {
 		return err
+	}
+
+	db.Close()
+
+	rowsAffected, err := res.RowsAffected()
+	if rowsAffected < 1 || err != nil {
+		return errors.New("Book not found")
 	}
 
 	return nil
 }
 
 func DeleteBookById(id int) error {
-	tx, err := StartTransaction()
+	db, err := GetDatabase()
 	if err != nil {
 		return err
 	}
 
-	res, err := tx.Exec(
-		`DELETE FROM library WHERE id = $1`,
+	res, err := db.Exec(
+		`DELETE FROM library WHERE id = ?`,
 		id,
 	)
-	if err = CompleteTransaction(tx, err); err != nil {
+	if err != nil {
 		return err
+	}
+
+	db.Close()
+	
+	rowsAffected, err := res.RowsAffected()
+	if rowsAffected < 1 || err != nil {
+		return errors.New("Book not found")
 	}
 
 	return nil

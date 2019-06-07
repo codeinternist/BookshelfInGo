@@ -18,17 +18,19 @@ type IBookController interface {
 
 func CreateBook(response http.ResponseWriter, request *http.Request) {
 	book := models.Book{}
-	e := json.NewDecoder(request.Body).Decode(&book)
-	if e != nil {
+	err := json.NewDecoder(request.Body).Decode(&book)
+	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 		return
 	}
 	id, err := workers.CreateBook(book)
 	idJson, errJson := json.Marshal(models.BookLocator{Id: id})
 	if err != nil || errJson != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 	} else {
 		response.Header().Set("Content-Type","application/json")
 		response.WriteHeader(http.StatusOK)
@@ -48,7 +50,8 @@ func RetrieveBookById(response http.ResponseWriter, request *http.Request) {
 	bookJson, errJson := json.Marshal(book)
 	if err != nil || errJson != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 	} else {
 		response.Header().Set("Content-Type","application/json")
 		response.WriteHeader(http.StatusOK)
@@ -61,7 +64,8 @@ func RetrieveAllBooks(response http.ResponseWriter, request *http.Request) {
 	booksJson, errJson := json.Marshal(books)
 	if err != nil || errJson != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 	} else {
 		response.Header().Set("Content-Type","application/json")
 		response.WriteHeader(http.StatusOK)
@@ -87,7 +91,8 @@ func UpdateBookById(response http.ResponseWriter, request *http.Request) {
 	err := workers.UpdateBookById(book, id)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 	} else {
 		response.WriteHeader(http.StatusOK)
 		response.Write([]byte("ok"))
@@ -105,7 +110,8 @@ func DeleteBookById(response http.ResponseWriter, request *http.Request) {
 	err := workers.DeleteBookById(id)
 	if err != nil {
 		response.WriteHeader(http.StatusBadRequest)
-		response.Write([]byte("bad request"))
+		response.Write([]byte("bad request\n"))
+		response.Write([]byte(err.Error()))
 	} else {
 		response.WriteHeader(http.StatusOK)
 		response.Write([]byte("ok"))
