@@ -1,8 +1,0 @@
-# External dependencies loaded by docker-compose
-pkg/
-src/
-github.com/
-
-# Executables
-*.exe
-api
