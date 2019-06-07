@@ -1,4 +1,4 @@
-## Redeam Code Challenge
+## Simple Bookshelf API
 
 ### Running the API
 
