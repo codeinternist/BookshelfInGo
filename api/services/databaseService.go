@@ -7,14 +7,14 @@ import (
 )
 
 func GetDatabase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "reader:secret@tcp(localhost:3306)/library?parseTime=true")
+	db, err := sql.Open("mysql", "reader:secret@tcp(mysql:3306)/library?parseTime=true")
 	if err != nil {
 		return nil, errors.New("Database failed to open")
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, errors.New("Database connection failure")
+		return nil, err//ors.New("Database connection failure")
 	}
 
 	return db, nil
